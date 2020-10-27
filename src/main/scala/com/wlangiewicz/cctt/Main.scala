@@ -30,8 +30,8 @@ object Main extends App with LazyLogging {
   val bindingFuture = Http().newServerAt(host, port).bind(routes.route)
 
   bindingFuture.onComplete {
-    case Success(_) => logger.info(s"Sellbot online at $host:$port")
-    case Failure(_) => logger.error(s"Unable to start Sellbot on $host:$port")
+    case Success(_) => logger.info(s"CCTT online at $host:$port")
+    case Failure(_) => logger.error(s"Unable to start CCTT on $host:$port")
   }
 
   scala.sys.addShutdownHook {

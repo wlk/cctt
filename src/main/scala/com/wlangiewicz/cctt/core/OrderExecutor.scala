@@ -16,22 +16,17 @@ object OrderExecutor extends LazyLogging {
   def placeOrderIfValid(
       trade: CalculatedOrder,
       tradeService: TradeService,
-      pair: CurrencyPair,
-      minSellPrice: BigDecimal
+      pair: CurrencyPair
     ): Unit =
     if (!trade.isValid) {
       logger.info(s"TradeEngine returned invalid trade $trade, not trading ...")
     } else {
-      if (MinPriceThreshold.isBelowThreshold(trade, minSellPrice)) {
-        logger.info(s"TradeEngine returned trade $trade, but it was below minimum sell price of $minSellPrice")
-      } else {
-        logger.info(s"TradeEngine returned trade $trade, executing")
+      logger.info(s"TradeEngine returned trade $trade, executing")
 
-        val order = getOrder(trade, pair)
+      val order = getOrder(trade, pair)
 
-        val placedOrderId = tradeService.placeLimitOrder(order)
-        logger.info(s"Placed order id: $placedOrderId")
-      }
+      val placedOrderId = tradeService.placeLimitOrder(order)
+      logger.info(s"Placed order id: $placedOrderId")
     }
 
   def shouldPlaceNewOrder(
