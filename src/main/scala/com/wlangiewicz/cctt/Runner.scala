@@ -1,6 +1,6 @@
 package com.wlangiewicz.cctt
 
-import com.wlangiewicz.cctt.config.ApplicationConfig.SellbotConfig
+import com.wlangiewicz.cctt.config.ApplicationConfig.CCTTConfig
 import com.wlangiewicz.cctt.core._
 import com.typesafe.scalalogging.LazyLogging
 import org.knowm.xchange.service.trade.TradeService
@@ -9,7 +9,7 @@ import scala.annotation.tailrec
 import scala.util.Try
 
 class Runner(
-    config: SellbotConfig,
+    config: CCTTConfig,
     tradeService: TradeService,
     exchangeSync: ExchangeSync)
     extends LazyLogging {
@@ -41,7 +41,7 @@ class Runner(
     calculatedOrder match {
       case Some(trade) if OrderExecutor.shouldPlaceNewOrder(openOrders, deletedOrderIds, trade) =>
         logger.info(s"TradeEngine returned a trade $trade to create")
-        OrderExecutor.placeOrderIfValid(trade, tradeService, config.pair, config.minSellPrice)
+        OrderExecutor.placeOrderIfValid(trade, tradeService, config.pair)
       case Some(trade) =>
         logger.info(
           s"TradeEngine returned a trade, but existing trade ${trade.amount}@${trade.price} is still the best one"

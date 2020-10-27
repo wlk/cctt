@@ -12,12 +12,12 @@ object ApplicationConfig {
 
   val Config = LoadConfig match {
     case Left(err)   => throw new Exception(s"Config error: $err")
-    case Right(conf) => SellbotConfig.fromUnsafeConfig(conf.cctt)
+    case Right(conf) => CCTTConfig.fromUnsafeConfig(conf.cctt)
   }
 
-  private case class AppConfig(cctt: SellbotUnsafeConfig)
+  private case class AppConfig(cctt: CCTTUnsafeConfig)
 
-  private case class SellbotUnsafeConfig(
+  private case class CCTTUnsafeConfig(
       key: String,
       secret: String,
       sleep: Long,
@@ -25,10 +25,9 @@ object ApplicationConfig {
       buyCurrency: String,
       exchange: String,
       maxSellAmount: BigDecimal,
-      sellStrategy: String,
-      minSellPrice: BigDecimal)
+      sellStrategy: String)
 
-  case class SellbotConfig(
+  case class CCTTConfig(
       key: String,
       secret: String,
       sleep: Long,
@@ -36,15 +35,14 @@ object ApplicationConfig {
       buyCurrency: Currency,
       exchange: BaseExchange,
       pair: CurrencyPair,
-      sellStrategy: SellStrategy,
-      minSellPrice: BigDecimal)
+      sellStrategy: SellStrategy)
 
-  object SellbotConfig {
+  object CCTTConfig {
 
-    def fromUnsafeConfig(c: SellbotUnsafeConfig): SellbotConfig = {
+    def fromUnsafeConfig(c: CCTTUnsafeConfig): CCTTConfig = {
       val sellCurrency = new Currency(c.sellCurrency)
 
-      SellbotConfig(
+      CCTTConfig(
         c.key,
         c.secret,
         c.sleep,
@@ -52,8 +50,7 @@ object ApplicationConfig {
         new Currency(c.buyCurrency),
         ExchangeSelector.getExchange(c.exchange),
         new CurrencyPair(c.sellCurrency, c.buyCurrency),
-        sellStrategy(c.sellStrategy, c.maxSellAmount, sellCurrency),
-        c.minSellPrice
+        sellStrategy(c.sellStrategy, c.maxSellAmount, sellCurrency)
       )
     }
 
