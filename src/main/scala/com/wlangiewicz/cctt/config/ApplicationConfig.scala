@@ -10,7 +10,7 @@ import pureconfig.generic.auto._
 object ApplicationConfig {
   private val LoadConfig: Either[ConfigReaderFailures, AppConfig] = ConfigSource.default.load[AppConfig]
 
-  val Config = LoadConfig match {
+  val Config: CCTTConfig = LoadConfig match {
     case Left(err)   => throw new Exception(s"Config error: $err")
     case Right(conf) => CCTTConfig.fromUnsafeConfig(conf.cctt)
   }

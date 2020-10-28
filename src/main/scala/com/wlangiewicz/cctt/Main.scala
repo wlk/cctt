@@ -2,10 +2,13 @@ package com.wlangiewicz.cctt
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.Route
 import com.wlangiewicz.cctt.config.ApplicationConfig
 import com.wlangiewicz.cctt.core.{ExchangeSync, ExchangeWrapper}
 import com.wlangiewicz.cctt.http.Routes
 import com.typesafe.scalalogging.LazyLogging
+import com.wlangiewicz.cctt.http.docs.DocsRoute
+import akka.http.scaladsl.server.Directives._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
@@ -23,11 +26,13 @@ object Main extends App with LazyLogging {
 
   val runner = new Runner(config, tradeService, exchangeSync)
 
+  val docsRoute = new DocsRoute
+
   val routes = new Routes(exchange.accountService, exchange.tradeService)
 
   val host = "0.0.0.0"
   val port = 8080
-  val bindingFuture = Http().newServerAt(host, port).bind(routes.route)
+  val bindingFuture = Http().newServerAt(host, port).bind(Route.seal(routes.route ~ docsRoute.route))
 
   bindingFuture.onComplete {
     case Success(_) => logger.info(s"CCTT online at $host:$port")

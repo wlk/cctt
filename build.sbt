@@ -15,6 +15,7 @@ libraryDependencies ++= {
   val scalaLoggingVersion = "3.9.2"
   val catsVersion = "2.2.0"
   val pureconfigVersion = "0.14.0"
+  val tapirVersion = "0.17.0-M5"
 
   val testDependencies = Seq(
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion  % Test,
@@ -35,6 +36,15 @@ libraryDependencies ++= {
     exchanges
   }
 
+  val tapirDependencies = Seq(
+    "com.softwaremill.sttp.tapir" %% "tapir-core"               % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-akka-http-server"   % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs"       % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
+    "com.softwaremill.sttp.tapir" %% "tapir-redoc-akka-http"    % tapirVersion
+  )
+
   val otherDependencies = Seq(
     "ch.qos.logback"             % "logback-classic" % logbackVersion,
     "com.typesafe.scala-logging" %% "scala-logging"  % scalaLoggingVersion,
@@ -42,7 +52,7 @@ libraryDependencies ++= {
     "com.github.pureconfig"      %% "pureconfig"     % pureconfigVersion
   )
 
-  testDependencies ++ otherDependencies ++ xchangeDependencies ++ akkaDependencies
+  testDependencies ++ otherDependencies ++ xchangeDependencies ++ akkaDependencies ++ tapirDependencies
 }
 
 scalacOptions --= Seq(

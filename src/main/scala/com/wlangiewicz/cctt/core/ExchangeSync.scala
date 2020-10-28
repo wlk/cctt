@@ -5,7 +5,7 @@ import org.knowm.xchange.currency.CurrencyPair
 
 class ExchangeSync(exchange: ExchangeWrapper, pair: CurrencyPair) {
 
-  def getExchangeState = {
+  def getExchangeState: ExchangeState = {
     val orderBook = exchange.marketService.getOrderBook(pair)
     val accountInfo = exchange.accountService.getAccountInfo
 
