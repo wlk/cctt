@@ -1,11 +1,21 @@
 package com.wlangiewicz.cctt.core
 
+import org.knowm.xchange.service.account.AccountService
+import org.knowm.xchange.service.marketdata.MarketDataService
+import org.knowm.xchange.service.trade.TradeService
 import org.knowm.xchange.{BaseExchange, ExchangeFactory}
+
+trait BaseExchangeWrapper {
+  val marketService: MarketDataService
+  val accountService: AccountService
+  val tradeService: TradeService
+}
 
 class ExchangeWrapper(
     exchange: BaseExchange,
     key: String,
-    secret: String) {
+    secret: String)
+    extends BaseExchangeWrapper {
 
   private val exchangeInstance = {
     val exchangeSpecification = exchange.getDefaultExchangeSpecification
@@ -14,7 +24,7 @@ class ExchangeWrapper(
     ExchangeFactory.INSTANCE.createExchange(exchangeSpecification)
   }
 
-  val marketService = exchangeInstance.getMarketDataService
-  val accountService = exchangeInstance.getAccountService
-  val tradeService = exchangeInstance.getTradeService
+  val marketService: MarketDataService = exchangeInstance.getMarketDataService
+  val accountService: AccountService = exchangeInstance.getAccountService
+  val tradeService: TradeService = exchangeInstance.getTradeService
 }

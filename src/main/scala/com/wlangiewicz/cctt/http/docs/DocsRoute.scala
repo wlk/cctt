@@ -13,8 +13,7 @@ class DocsRoute extends ApiRoute {
   private val title = "CCTT API"
 
   private val endpoints: List[Endpoint[_, _, _, _]] =
-    List(OpenOrdersEndpoint.openOrdersEndpoint
-    )
+    List(OpenOrdersEndpoint.openOrdersEndpoint)
 
   private val apiInfo = Info(
     title = "CCTT API",

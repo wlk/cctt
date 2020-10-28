@@ -5,7 +5,6 @@ import com.typesafe.scalalogging.LazyLogging
 import org.knowm.xchange.currency.CurrencyPair
 import org.knowm.xchange.dto.Order.OrderType
 import org.knowm.xchange.dto.trade.LimitOrder
-import org.knowm.xchange.service.trade.TradeService
 
 object OrderExecutor extends LazyLogging {
 
@@ -15,7 +14,7 @@ object OrderExecutor extends LazyLogging {
 
   def placeOrderIfValid(
       trade: CalculatedOrder,
-      tradeService: TradeService,
+      exchangeIo: BaseExchangeIo,
       pair: CurrencyPair
     ): Unit =
     if (!trade.isValid) {
@@ -25,7 +24,7 @@ object OrderExecutor extends LazyLogging {
 
       val order = getOrder(trade, pair)
 
-      val placedOrderId = tradeService.placeLimitOrder(order)
+      val placedOrderId = exchangeIo.placeLimitOrder(order)
       logger.info(s"Placed order id: $placedOrderId")
     }
 

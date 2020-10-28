@@ -1,7 +1,6 @@
 package com.wlangiewicz.cctt.config
 
 import com.wlangiewicz.cctt.core._
-import org.knowm.xchange.BaseExchange
 import org.knowm.xchange.currency.{Currency, CurrencyPair}
 import pureconfig._
 import pureconfig.error.ConfigReaderFailures
@@ -18,8 +17,8 @@ object ApplicationConfig {
   private case class AppConfig(cctt: CCTTUnsafeConfig)
 
   private case class CCTTUnsafeConfig(
-      key: String,
-      secret: String,
+      key: Option[String],
+      secret: Option[String],
       sleep: Long,
       sellCurrency: String,
       buyCurrency: String,
@@ -28,12 +27,12 @@ object ApplicationConfig {
       tradeStrategy: String)
 
   case class CCTTConfig(
-      key: String,
-      secret: String,
+      key: Option[String],
+      secret: Option[String],
       sleep: Long,
       sellCurrency: Currency,
       buyCurrency: Currency,
-      exchange: BaseExchange,
+      exchange: ExchangeName.Value,
       pair: CurrencyPair,
       tradeStrategy: TradeStrategy)
 
@@ -48,7 +47,7 @@ object ApplicationConfig {
         c.sleep,
         sellCurrency,
         new Currency(c.buyCurrency),
-        ExchangeSelector.getExchange(c.exchange),
+        ExchangeName.withName(c.exchange),
         new CurrencyPair(c.sellCurrency, c.buyCurrency),
         tradeStrategy(c.tradeStrategy, c.maxTradeAmount, sellCurrency)
       )

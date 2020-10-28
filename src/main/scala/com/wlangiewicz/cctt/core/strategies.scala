@@ -84,7 +84,7 @@ case class MatchHighestBidStrategy(maxAmount: BigDecimal, sellCurrency: Currency
 
   private val delegate = ExactMatchingStrategy(maxAmount, sellCurrency, orderType)
 
-  override def getOrder(exchangeInfo: ExchangeState) =
+  override def getOrder(exchangeInfo: ExchangeState): Option[CalculatedOrder] =
     delegate.getOrder(exchangeInfo)
 }
 

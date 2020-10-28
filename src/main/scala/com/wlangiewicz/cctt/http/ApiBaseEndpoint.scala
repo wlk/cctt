@@ -1,4 +1,5 @@
 package com.wlangiewicz.cctt.http
+
 import com.wlangiewicz.cctt.http.data._
 import io.circe.generic.auto._
 import sttp.model.StatusCode
