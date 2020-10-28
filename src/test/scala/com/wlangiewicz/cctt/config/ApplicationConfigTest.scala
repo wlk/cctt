@@ -6,30 +6,30 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers._
 
 class ApplicationConfigTest extends AnyFlatSpec with should.Matchers {
-  val sellCurrency = ApplicationConfig.Config.sellCurrency
+  private val sellCurrency = ApplicationConfig.Config.sellCurrency
 
-  "CCTTConfig" should "return correct sell strategy" in {
-    CCTTConfig.sellStrategy("NoOpSellStrategy", 1, sellCurrency) shouldBe NoOpSellStrategy
-    CCTTConfig.sellStrategy("MatchLowestAskStrategy", 1, sellCurrency) shouldBe MatchLowestAskStrategy(
+  "CCTTConfig" should "return correct trade strategy" in {
+    CCTTConfig.tradeStrategy("NoOpTradeStrategy", 1, sellCurrency) shouldBe NoOpTradeStrategy
+    CCTTConfig.tradeStrategy("MatchLowestAskStrategy", 1, sellCurrency) shouldBe MatchLowestAskStrategy(
       1,
       sellCurrency
     )
-    CCTTConfig.sellStrategy("OneBelowLowestAskStrategy", 1, sellCurrency) shouldBe OneBelowLowestAskStrategy(
+    CCTTConfig.tradeStrategy("OneBelowLowestAskStrategy", 1, sellCurrency) shouldBe OneBelowLowestAskStrategy(
       1,
       sellCurrency
     )
-    CCTTConfig.sellStrategy("MatchHighestBidStrategy", 1, sellCurrency) shouldBe MatchHighestBidStrategy(
+    CCTTConfig.tradeStrategy("MatchHighestBidStrategy", 1, sellCurrency) shouldBe MatchHighestBidStrategy(
       1,
       sellCurrency
     )
-    CCTTConfig.sellStrategy("OneAboveHighestBidStrategy", 1, sellCurrency) shouldBe OneAboveHighestBidStrategy(
+    CCTTConfig.tradeStrategy("OneAboveHighestBidStrategy", 1, sellCurrency) shouldBe OneAboveHighestBidStrategy(
       1,
       sellCurrency
     )
   }
 
-  it should "throw if invalid sell strategy provided" in {
-    an[InvalidSellStrategyException] should be thrownBy CCTTConfig.sellStrategy("abc", 1, sellCurrency)
+  it should "throw if invalid trade strategy provided" in {
+    an[InvalidTradeStrategyException] should be thrownBy CCTTConfig.tradeStrategy("abc", 1, sellCurrency)
   }
 
 }

@@ -34,7 +34,7 @@ class Runner(
     val openOrders = OpenOrdersService.currencyOpenOrders(config.pair, tradeService)
     logger.debug(s"Open Orders: ${openOrders.toString}")
 
-    val calculatedOrder = OrderCalculationService.calculateOrder(exchangeState, config.sellStrategy)
+    val calculatedOrder = OrderCalculationService.calculateOrder(exchangeState, config.tradeStrategy)
 
     val deletedOrderIds = OrderCancellationService.run(calculatedOrder, openOrders, tradeService).toSet
 

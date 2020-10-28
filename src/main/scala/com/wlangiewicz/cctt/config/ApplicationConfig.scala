@@ -24,8 +24,8 @@ object ApplicationConfig {
       sellCurrency: String,
       buyCurrency: String,
       exchange: String,
-      maxSellAmount: BigDecimal,
-      sellStrategy: String)
+      maxTradeAmount: BigDecimal,
+      tradeStrategy: String)
 
   case class CCTTConfig(
       key: String,
@@ -35,7 +35,7 @@ object ApplicationConfig {
       buyCurrency: Currency,
       exchange: BaseExchange,
       pair: CurrencyPair,
-      sellStrategy: SellStrategy)
+      tradeStrategy: TradeStrategy)
 
   object CCTTConfig {
 
@@ -50,22 +50,23 @@ object ApplicationConfig {
         new Currency(c.buyCurrency),
         ExchangeSelector.getExchange(c.exchange),
         new CurrencyPair(c.sellCurrency, c.buyCurrency),
-        sellStrategy(c.sellStrategy, c.maxSellAmount, sellCurrency)
+        tradeStrategy(c.tradeStrategy, c.maxTradeAmount, sellCurrency)
       )
     }
 
-    def sellStrategy(
-        sellStrategyString: String,
-        maxSellAmount: BigDecimal,
+    def tradeStrategy(
+        tradeStrategyString: String,
+        maxTradeAmount: BigDecimal,
         sellCurrency: Currency
-      ): SellStrategy =
-      sellStrategyString match {
-        case "NoOpSellStrategy"           => NoOpSellStrategy
-        case "MatchLowestAskStrategy"     => MatchLowestAskStrategy(maxSellAmount, sellCurrency)
-        case "OneBelowLowestAskStrategy"  => OneBelowLowestAskStrategy(maxSellAmount, sellCurrency)
-        case "MatchHighestBidStrategy"    => MatchHighestBidStrategy(maxSellAmount, sellCurrency)
-        case "OneAboveHighestBidStrategy" => OneAboveHighestBidStrategy(maxSellAmount, sellCurrency)
-        case other                        => throw new InvalidSellStrategyException(other)
+      ): TradeStrategy =
+      tradeStrategyString match {
+        case "NoOpTradeStrategy"         => NoOpTradeStrategy
+        case "MatchLowestAskStrategy"    => MatchLowestAskStrategy(maxTradeAmount, sellCurrency)
+        case "OneBelowLowestAskStrategy" => OneBelowLowestAskStrategy(maxTradeAmount, sellCurrency)
+        case "MatchHighestBidStrategy"   => MatchHighestBidStrategy(maxTradeAmount, sellCurrency)
+        case "OneAboveHighestBidStrategy" =>
+          OneAboveHighestBidStrategy(maxTradeAmount, sellCurrency)
+        case other => throw new InvalidTradeStrategyException(other)
       }
 
   }
