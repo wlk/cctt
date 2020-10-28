@@ -5,6 +5,6 @@ import com.typesafe.scalalogging.LazyLogging
 
 object OrderCalculationService extends LazyLogging {
 
-  def calculateOrder(exchangeInfo: ExchangeState, sellStrategy: SellStrategy): Option[CalculatedOrder] =
-    sellStrategy.getOrder(exchangeInfo)
+  def calculateOrder(exchangeInfo: ExchangeState, tradeStrategy: TradeStrategy): Option[CalculatedOrder] =
+    tradeStrategy.getOrder(exchangeInfo)
 }

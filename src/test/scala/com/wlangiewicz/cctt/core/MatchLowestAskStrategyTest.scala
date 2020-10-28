@@ -6,9 +6,9 @@ import org.scalatest.matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
 class MatchLowestAskStrategyTest extends AnyWordSpec with should.Matchers {
-  val sellCurrency = ApplicationConfig.Config.sellCurrency
-  val sellAmount = BigDecimal("0.1")
-  val strategy = MatchLowestAskStrategy(sellAmount, sellCurrency)
+  private val sellCurrency = ApplicationConfig.Config.sellCurrency
+  private val tradeAmount = BigDecimal("0.1")
+  private val strategy = MatchLowestAskStrategy(tradeAmount, sellCurrency)
 
   "MatchLowestAskStrategy" should {
     "return 0 amount when empty order book provided" in {
@@ -27,14 +27,14 @@ class MatchLowestAskStrategyTest extends AnyWordSpec with should.Matchers {
       result shouldBe None
     }
 
-    s"return $sellAmount amount and price = lowestAsk when non-empty order book provided and account has balance" in {
+    s"return $tradeAmount amount and price = lowestAsk when non-empty order book provided and account has balance" in {
       val lowestAsk = BigDecimal(4300)
       val highestBid = BigDecimal(4200)
       val orderBook = OrderBookTestHelper.withTopOrders(lowestAsk, highestBid)
 
       val result =
         OrderCalculationService.calculateOrder(ExchangeState(orderBook, AccountInfoTestHelper.hasBtcAndUsd), strategy)
-      result shouldBe Some(CalculatedOrder(sellAmount, lowestAsk))
+      result shouldBe Some(CalculatedOrder(tradeAmount, lowestAsk))
     }
   }
 }

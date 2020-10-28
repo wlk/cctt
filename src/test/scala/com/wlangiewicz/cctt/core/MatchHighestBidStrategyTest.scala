@@ -6,20 +6,20 @@ import org.scalatest.matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
 class MatchHighestBidStrategyTest extends AnyWordSpec with should.Matchers {
-  val sellCurrency = ApplicationConfig.Config.sellCurrency
-  val sellAmount = BigDecimal("0.1")
-  val strategy = MatchHighestBidStrategy(sellAmount, sellCurrency)
+  private val sellCurrency = ApplicationConfig.Config.sellCurrency
+  private val tradeAmount = BigDecimal("0.1")
+  private val strategy = MatchHighestBidStrategy(tradeAmount, sellCurrency)
 
   "MatchHighestBidStrategy" should {
 
-    s"return $sellAmount amount and price = lowestAsk when non-empty order book provided and account has balance" in {
+    s"return $tradeAmount amount and price = lowestAsk when non-empty order book provided and account has balance" in {
       val lowestAsk = BigDecimal(4300)
       val highestBid = BigDecimal(4200)
       val orderBook = OrderBookTestHelper.withTopOrders(lowestAsk, highestBid)
 
       val result =
         OrderCalculationService.calculateOrder(ExchangeState(orderBook, AccountInfoTestHelper.hasBtcAndUsd), strategy)
-      result shouldBe Some(CalculatedOrder(sellAmount, highestBid))
+      result shouldBe Some(CalculatedOrder(tradeAmount, highestBid))
     }
   }
 }
