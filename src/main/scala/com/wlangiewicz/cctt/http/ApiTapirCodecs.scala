@@ -32,8 +32,14 @@ trait ApiTapirCodecs {
     Codec.string.mapDecode(decode)(_.toString)
   }
   implicit val schemaForBigDecimal: Schema[BigDecimal] = Schema(SNumber).format("decimal")
+
+  implicit val TradeIdCodec = Codec.uuid.map(TradeId.apply _)(_.value)
 }
 
 trait ApiJsonFormats {
+  import io.circe.Encoder
+
   // this will encode/decode objects as direct json values
+  implicit val TradeIdEncoder: Encoder[TradeId] = Encoder.encodeUUID.contramap[TradeId](_.value)
+
 }

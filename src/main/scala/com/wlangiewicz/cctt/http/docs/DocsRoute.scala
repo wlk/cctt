@@ -2,6 +2,8 @@ package com.wlangiewicz.cctt.http.docs
 
 import akka.http.scaladsl.server.{Directives, Route}
 import com.wlangiewicz.cctt.http.ApiRoute
+import com.wlangiewicz.cctt.http.endpoints.gettrade.GetTradeEndpoint
+import com.wlangiewicz.cctt.http.endpoints.newtrade.NewTradeEndpoint
 import com.wlangiewicz.cctt.http.endpoints.openorders.OpenOrdersEndpoint
 import sttp.tapir.Endpoint
 import sttp.tapir.docs.openapi.RichOpenAPIEndpoints
@@ -13,7 +15,7 @@ class DocsRoute extends ApiRoute {
   private val title = "CCTT API"
 
   private val endpoints: List[Endpoint[_, _, _, _]] =
-    List(OpenOrdersEndpoint.openOrdersEndpoint)
+    List(OpenOrdersEndpoint.openOrdersEndpoint, NewTradeEndpoint.newTradeEndpoint, GetTradeEndpoint.getTradeEndpoint)
 
   private val apiInfo = Info(
     title = "CCTT API",
