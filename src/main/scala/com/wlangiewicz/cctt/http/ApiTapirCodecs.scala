@@ -1,4 +1,5 @@
 package com.wlangiewicz.cctt.http
+
 import java.util.UUID
 
 import com.wlangiewicz.cctt.http.data._
@@ -12,7 +13,9 @@ trait EnumHelper { e: Enumeration =>
 
   implicit val enumDecoder: Decoder[e.Value] = Decoder.decodeEnumeration(e)
   implicit val enumEncoder: Encoder[e.Value] = Encoder.encodeEnumeration(e)
-  implicit val enumCodecPlain: sttp.tapir.Codec[String, Value, CodecFormat.TextPlain] = sttp.tapir.Codec.string.map(e.withName _)(_.toString)
+
+  implicit val enumCodecPlain: sttp.tapir.Codec[String, Value, CodecFormat.TextPlain] =
+    sttp.tapir.Codec.string.map(e.withName _)(_.toString)
 
   implicit val schemaForEnum: Schema[e.Value] = Schema(SchemaType.SString)
   implicit def validatorForEnum: Validator[e.Value] = Validator.`enum`(e.values.toList, v => Option(v))

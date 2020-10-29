@@ -3,32 +3,29 @@ package com.wlangiewicz.cctt
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
-import com.wlangiewicz.cctt.config.ApplicationConfig
-import com.wlangiewicz.cctt.core.{ExchangeSync, ExchangeWrapper}
-import com.wlangiewicz.cctt.http.Routes
 import com.typesafe.scalalogging.LazyLogging
+import com.wlangiewicz.cctt.config.ApplicationConfig
+import com.wlangiewicz.cctt.core.{ExchangeIoBuilder, ExchangeSync}
 import com.wlangiewicz.cctt.http.docs.DocsRoute
-import akka.http.scaladsl.server.Directives._
-
+import com.wlangiewicz.cctt.http.Routes
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
+import akka.http.scaladsl.server.Directives._
 
 object Main extends App with LazyLogging {
   implicit private lazy val system: ActorSystem = ActorSystem("cctt")
 
   val config = ApplicationConfig.Config
 
-  val exchange = new ExchangeWrapper(config.exchange, config.key, config.secret)
+  val exchangeIo = ExchangeIoBuilder.build(config.exchange, config.key, config.secret)
 
-  val exchangeSync = new ExchangeSync(exchange, config.pair)
+  val exchangeSync = new ExchangeSync(exchangeIo, config.pair)
 
-  val tradeService = exchange.tradeService
-
-  val runner = new Runner(config, tradeService, exchangeSync)
+  val runner = new Runner(config, exchangeIo, exchangeSync)
 
   val docsRoute = new DocsRoute
 
-  val routes = new Routes(exchange.accountService, exchange.tradeService)
+  val routes = new Routes(exchangeIo)
 
   val host = "0.0.0.0"
   val port = 8080

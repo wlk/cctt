@@ -3,14 +3,13 @@ package com.wlangiewicz.cctt
 import com.wlangiewicz.cctt.config.ApplicationConfig.CCTTConfig
 import com.wlangiewicz.cctt.core._
 import com.typesafe.scalalogging.LazyLogging
-import org.knowm.xchange.service.trade.TradeService
 
 import scala.annotation.tailrec
 import scala.util.Try
 
 class Runner(
     config: CCTTConfig,
-    tradeService: TradeService,
+    exchangeIo: BaseExchangeIo,
     exchangeSync: ExchangeSync)
     extends LazyLogging {
 
@@ -31,17 +30,17 @@ class Runner(
 
     logger.debug(s"AccountInfo: ${exchangeState.accountInfo.toString}")
 
-    val openOrders = OpenOrdersService.currencyOpenOrders(config.pair, tradeService)
+    val openOrders = exchangeIo.getOpenOrders(config.pair)
     logger.debug(s"Open Orders: ${openOrders.toString}")
 
     val calculatedOrder = OrderCalculationService.calculateOrder(exchangeState, config.tradeStrategy)
 
-    val deletedOrderIds = OrderCancellationService.run(calculatedOrder, openOrders, tradeService).toSet
+    val deletedOrderIds = OrderCancellationService.run(calculatedOrder, openOrders, exchangeIo).toSet
 
     calculatedOrder match {
       case Some(trade) if OrderExecutor.shouldPlaceNewOrder(openOrders, deletedOrderIds, trade) =>
         logger.info(s"TradeEngine returned a trade $trade to create")
-        OrderExecutor.placeOrderIfValid(trade, tradeService, config.pair)
+        OrderExecutor.placeOrderIfValid(trade, exchangeIo, config.pair)
       case Some(trade) =>
         logger.info(
           s"TradeEngine returned a trade, but existing trade ${trade.amount}@${trade.price} is still the best one"
