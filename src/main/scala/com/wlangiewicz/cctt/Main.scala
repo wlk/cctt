@@ -8,6 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import com.wlangiewicz.cctt.config.ApplicationConfig
 import com.wlangiewicz.cctt.core.{ExchangeIoBuilder, ExchangeSync}
 import com.wlangiewicz.cctt.http.docs.DocsRoute
+import com.wlangiewicz.cctt.http.endpoints.gettrade.{GetTradeController, GetTradeRoute}
 import com.wlangiewicz.cctt.http.endpoints.newtrade.{NewTradeController, NewTradeRoute}
 import com.wlangiewicz.cctt.http.endpoints.openorders.{OpenOrdersController, OpenOrdersRoute}
 
@@ -28,10 +29,11 @@ object Main extends App with LazyLogging {
   val docsRoute = new DocsRoute
   val openOrdersRoute = new OpenOrdersRoute(new OpenOrdersController)
   val newTradeRoute = new NewTradeRoute(new NewTradeController)
+  val getTradeRoute = new GetTradeRoute(new GetTradeController)
 
   val routes = Route.seal(
     docsRoute.route ~
-      openOrdersRoute.route ~ newTradeRoute.route
+      openOrdersRoute.route ~ newTradeRoute.route ~ getTradeRoute.route
   )
 
   val host = "0.0.0.0"

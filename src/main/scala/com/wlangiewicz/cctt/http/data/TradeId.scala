@@ -1,7 +1,9 @@
 package com.wlangiewicz.cctt.http.data
 
-case class TradeId(value: String)
+import java.util.UUID
+
+case class TradeId(value: UUID)
 
 object TradeId {
-  val example = TradeId("ABC-312")
+  val example = TradeId(UUID.randomUUID())
 }
