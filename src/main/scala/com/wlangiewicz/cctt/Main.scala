@@ -22,9 +22,9 @@ object Main extends App with LazyLogging {
 
   val exchangeIo = ExchangeIoBuilder.build(config.exchange, config.key, config.secret)
 
-  val exchangeSync = new ExchangeSync(exchangeIo, config.pair)
+  val exchangeSync = new ExchangeSync(exchangeIo)
 
-  val runner = new Runner(config, exchangeIo, exchangeSync)
+  val runner = new Runner(exchangeIo, exchangeSync)
 
   val docsRoute = new DocsRoute
   val openOrdersRoute = new OpenOrdersRoute(new OpenOrdersController)

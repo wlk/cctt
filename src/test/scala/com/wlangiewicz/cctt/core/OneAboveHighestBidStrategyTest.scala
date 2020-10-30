@@ -1,14 +1,14 @@
 package com.wlangiewicz.cctt.core
 
-import com.wlangiewicz.cctt.config.ApplicationConfig
-import com.wlangiewicz.cctt.data.{CalculatedOrder, ExchangeState}
+import com.wlangiewicz.cctt.data.ExchangeState
+import org.knowm.xchange.currency.Currency
 import org.scalatest.matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
 class OneAboveHighestBidStrategyTest extends AnyWordSpec with should.Matchers {
-  private val sellCurrency = ApplicationConfig.Config.sellCurrency
+  private val sellCurrency = Currency.BTC
   private val tradeAmount = BigDecimal("0.1")
-  private val strategy = OneAboveHighestBidStrategy(tradeAmount, sellCurrency)
+  private val strategy = OneAboveHighestBidStrategy(sellCurrency)
 
   "OneBelowLowestAskStrategy" should {
     s"return $tradeAmount amount and price = lowestAsk + 0.01 when non-empty order book provided and account has balance" in {
@@ -17,8 +17,8 @@ class OneAboveHighestBidStrategyTest extends AnyWordSpec with should.Matchers {
       val orderBook = OrderBookTestHelper.withTopOrders(lowestAsk, highestBid)
 
       val result =
-        OrderCalculationService.calculateOrder(ExchangeState(orderBook, AccountInfoTestHelper.hasBtcAndUsd), strategy)
-      result shouldBe Some(CalculatedOrder(tradeAmount, highestBid + 0.01))
+        OrderPriceCalculator.calculatePrice(ExchangeState(orderBook, AccountInfoTestHelper.hasBtcAndUsd), strategy)
+      result shouldBe Some(highestBid + 0.01)
     }
 
     "return lowest ASK price if spread is less than 0.01" in {
@@ -27,8 +27,8 @@ class OneAboveHighestBidStrategyTest extends AnyWordSpec with should.Matchers {
       val orderBook = OrderBookTestHelper.withTopOrders(lowestAsk, highestBid)
 
       val result =
-        OrderCalculationService.calculateOrder(ExchangeState(orderBook, AccountInfoTestHelper.hasBtcAndUsd), strategy)
-      result shouldBe Some(CalculatedOrder(tradeAmount, lowestAsk))
+        OrderPriceCalculator.calculatePrice(ExchangeState(orderBook, AccountInfoTestHelper.hasBtcAndUsd), strategy)
+      result shouldBe Some(lowestAsk)
     }
   }
 }

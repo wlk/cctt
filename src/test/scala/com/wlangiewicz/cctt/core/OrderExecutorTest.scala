@@ -12,7 +12,7 @@ class OrderExecutorTest extends AnyWordSpec with should.Matchers {
     "shouldPlaceNewOrder" should {
       "return true if we don't have any open orders" in {
         val calculatedOrder = CalculatedOrder(10, 5900)
-        OrderExecutor.shouldPlaceNewOrder(Seq.empty, Set.empty, calculatedOrder) shouldBe true
+        OrderExecutor.shouldPlaceNewOrder(Seq.empty, Set.empty, calculatedOrder.price) shouldBe true
       }
 
       "return true if calculated order price is not equal to top of the order book" in {
@@ -31,7 +31,7 @@ class OrderExecutorTest extends AnyWordSpec with should.Matchers {
           )
         )
 
-        OrderExecutor.shouldPlaceNewOrder(ourOpenOrders, Set.empty, calculatedOrder) shouldBe true
+        OrderExecutor.shouldPlaceNewOrder(ourOpenOrders, Set.empty, calculatedOrder.price) shouldBe true
       }
 
       "return false if calculated order price and amount are equal to the top of the order book" in {
@@ -49,7 +49,7 @@ class OrderExecutorTest extends AnyWordSpec with should.Matchers {
           )
         )
 
-        OrderExecutor.shouldPlaceNewOrder(ourOpenOrders, Set.empty, calculatedOrder) shouldBe false
+        OrderExecutor.shouldPlaceNewOrder(ourOpenOrders, Set.empty, calculatedOrder.price) shouldBe false
       }
     }
   }

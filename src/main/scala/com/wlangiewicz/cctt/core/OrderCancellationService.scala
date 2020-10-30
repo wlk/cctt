@@ -1,18 +1,18 @@
 package com.wlangiewicz.cctt.core
 
-import com.wlangiewicz.cctt.data.{CalculatedOrder, OrderId}
 import com.typesafe.scalalogging.LazyLogging
+import com.wlangiewicz.cctt.data.OrderId
 import org.knowm.xchange.dto.trade.LimitOrder
 
 import scala.collection.immutable.Seq
 
 object OrderCancellationService extends LazyLogging {
 
-  private[core] def nonMatchingOrders(trade: CalculatedOrder)(order: LimitOrder): Boolean =
-    order.getOriginalAmount != trade.amount.bigDecimal || order.getLimitPrice != trade.price.bigDecimal
+  private[core] def nonMatchingOrders(price: BigDecimal)(order: LimitOrder): Boolean =
+    order.getLimitPrice != price.bigDecimal
 
-  private[core] def orderIdsToCancel(maybeTrade: Option[CalculatedOrder], openOrders: Seq[LimitOrder]): Seq[String] = {
-    val ordersToCancel = maybeTrade match {
+  private[core] def orderIdsToCancel(maybePrice: Option[BigDecimal], openOrders: Seq[LimitOrder]): Seq[String] = {
+    val ordersToCancel = maybePrice match {
       case Some(trade) =>
         openOrders.filter(nonMatchingOrders(trade))
       case None =>
@@ -31,7 +31,7 @@ object OrderCancellationService extends LazyLogging {
     }
 
   def run(
-      maybeTrade: Option[CalculatedOrder],
+      maybeTrade: Option[BigDecimal],
       openOrders: Seq[LimitOrder],
       exchangeIo: BaseExchangeIo
     ): Seq[String] = {

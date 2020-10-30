@@ -25,7 +25,7 @@ class OrderCancellationServiceTest extends AnyWordSpec with should.Matchers {
           BigDecimal(4300).bigDecimal
         )
 
-        OrderCancellationService.nonMatchingOrders(trade)(order) shouldBe true
+        OrderCancellationService.nonMatchingOrders(trade.price)(order) shouldBe true
       }
 
       "return false if orders match" in {
@@ -39,7 +39,7 @@ class OrderCancellationServiceTest extends AnyWordSpec with should.Matchers {
           BigDecimal(1).bigDecimal
         )
 
-        OrderCancellationService.nonMatchingOrders(trade)(order) shouldBe false
+        OrderCancellationService.nonMatchingOrders(trade.price)(order) shouldBe false
       }
     }
 
@@ -59,7 +59,7 @@ class OrderCancellationServiceTest extends AnyWordSpec with should.Matchers {
         OrderCancellationService.orderIdsToCancel(None, trades) shouldBe List("id")
       }
 
-      "list only all non matching orders" in {
+      "list only all non matching orders (only price matters)" in {
         val trades = List[LimitOrder](
           new LimitOrder(
             OrderType.ASK,
@@ -86,8 +86,7 @@ class OrderCancellationServiceTest extends AnyWordSpec with should.Matchers {
             BigDecimal(1).bigDecimal
           )
         )
-        val trade = CalculatedOrder(1, 1)
-        OrderCancellationService.orderIdsToCancel(Some(trade), trades) shouldBe List("id1", "id3")
+        OrderCancellationService.orderIdsToCancel(Some(1), trades) shouldBe List("id1")
       }
     }
   }

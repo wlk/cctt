@@ -1,7 +1,5 @@
 package com.wlangiewicz.cctt.config
 
-import com.wlangiewicz.cctt.core._
-import org.knowm.xchange.currency.{Currency, CurrencyPair}
 import pureconfig._
 import pureconfig.error.ConfigReaderFailures
 import pureconfig.generic.auto._
@@ -20,54 +18,23 @@ object ApplicationConfig {
       key: Option[String],
       secret: Option[String],
       sleep: Long,
-      sellCurrency: String,
-      buyCurrency: String,
-      exchange: String,
-      maxTradeAmount: BigDecimal,
-      tradeStrategy: String)
+      exchange: String)
 
   case class CCTTConfig(
       key: Option[String],
       secret: Option[String],
       sleep: Long,
-      sellCurrency: Currency,
-      buyCurrency: Currency,
-      exchange: ExchangeName.Value,
-      pair: CurrencyPair,
-      tradeStrategy: TradeStrategy)
+      exchange: ExchangeName.Value)
 
   object CCTTConfig {
 
-    def fromUnsafeConfig(c: CCTTUnsafeConfig): CCTTConfig = {
-      val sellCurrency = new Currency(c.sellCurrency)
-
+    def fromUnsafeConfig(c: CCTTUnsafeConfig): CCTTConfig =
       CCTTConfig(
         c.key,
         c.secret,
         c.sleep,
-        sellCurrency,
-        new Currency(c.buyCurrency),
-        ExchangeName.withName(c.exchange),
-        new CurrencyPair(c.sellCurrency, c.buyCurrency),
-        tradeStrategy(c.tradeStrategy, c.maxTradeAmount, sellCurrency)
+        ExchangeName.withName(c.exchange)
       )
-    }
-
-    def tradeStrategy(
-        tradeStrategyString: String,
-        maxTradeAmount: BigDecimal,
-        sellCurrency: Currency
-      ): TradeStrategy =
-      tradeStrategyString match {
-        case "NoOpTradeStrategy"         => NoOpTradeStrategy
-        case "MatchLowestAskStrategy"    => MatchLowestAskStrategy(maxTradeAmount, sellCurrency)
-        case "OneBelowLowestAskStrategy" => OneBelowLowestAskStrategy(maxTradeAmount, sellCurrency)
-        case "MatchHighestBidStrategy"   => MatchHighestBidStrategy(maxTradeAmount, sellCurrency)
-        case "OneAboveHighestBidStrategy" =>
-          OneAboveHighestBidStrategy(maxTradeAmount, sellCurrency)
-        case other => throw new InvalidTradeStrategyException(other)
-      }
-
   }
 
 }

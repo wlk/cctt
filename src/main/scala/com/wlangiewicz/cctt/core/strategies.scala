@@ -1,12 +1,13 @@
 package com.wlangiewicz.cctt.core
 
-import com.wlangiewicz.cctt.data.{CalculatedOrder, ExchangeState}
+import com.wlangiewicz.cctt.data.ExchangeState
 import org.knowm.xchange.currency.Currency
 import org.knowm.xchange.dto.Order.OrderType
+
 import scala.jdk.CollectionConverters._
 
 sealed trait TradeStrategy {
-  def getOrder(exchangeInfo: ExchangeState): Option[CalculatedOrder]
+  def getPrice(exchangeInfo: ExchangeState): Option[BigDecimal]
 }
 
 sealed trait WithOrderType {
@@ -33,67 +34,59 @@ sealed trait WithOrderType {
 }
 
 case object NoOpTradeStrategy extends TradeStrategy {
-  override def getOrder(exchangeInfo: ExchangeState): Option[CalculatedOrder] = None
+  override def getPrice(exchangeInfo: ExchangeState): Option[BigDecimal] = None
 }
 
-private case class ExactMatchingStrategy(
-    maxAmount: BigDecimal,
-    sellCurrency: Currency,
-    override val orderType: OrderType)
+private case class ExactMatchingStrategy(sellCurrency: Currency, override val orderType: OrderType)
     extends TradeStrategy
     with WithOrderType {
 
-  override def getOrder(exchangeInfo: ExchangeState): Option[CalculatedOrder] = {
+  override def getPrice(exchangeInfo: ExchangeState): Option[BigDecimal] = {
     val walletAmount = BigDecimal(exchangeInfo.accountInfo.getWallet.getBalance(sellCurrency).getAvailable)
-    val amount = walletAmount.min(maxAmount)
 
-    exchangeInfo.orderBook.getOrders(orderType).asScala.sorted.headOption.map(_.getLimitPrice).flatMap { bestOrder =>
-      if (amount == 0 || bestOrder == BigDecimal(0).bigDecimal) {
+    exchangeInfo.orderBook.getOrders(orderType).asScala.sorted.headOption.map(_.getLimitPrice).flatMap { bestPrice =>
+      if (walletAmount == 0 || bestPrice == BigDecimal(0).bigDecimal) {
         None
       } else {
-        Some(CalculatedOrder(amount, bestOrder))
+        Some(bestPrice)
       }
     }
   }
 }
 
-case class MatchLowestAskStrategy(maxAmount: BigDecimal, sellCurrency: Currency)
-    extends TradeStrategy
-    with WithOrderType {
+case class MatchLowestAskStrategy(sellCurrency: Currency) extends TradeStrategy with WithOrderType {
   override val orderType = OrderType.ASK
-  private val delegate = ExactMatchingStrategy(maxAmount, sellCurrency, orderType)
+  private val delegate = ExactMatchingStrategy(sellCurrency, orderType)
 
-  override def getOrder(exchangeInfo: ExchangeState): Option[CalculatedOrder] =
-    delegate.getOrder(exchangeInfo)
+  override def getPrice(exchangeInfo: ExchangeState): Option[BigDecimal] =
+    delegate.getPrice(exchangeInfo)
 }
 
-case class OneBelowLowestAskStrategy(maxAmount: BigDecimal, sellCurrency: Currency) extends TradeStrategy {
-  private val delegate = MatchLowestAskStrategy(maxAmount, sellCurrency)
+case class OneBelowLowestAskStrategy(sellCurrency: Currency) extends TradeStrategy {
+  private val delegate = MatchLowestAskStrategy(sellCurrency)
   private val delta = BigDecimal(0.01)
 
-  override def getOrder(exchangeInfo: ExchangeState): Option[CalculatedOrder] = {
+  override def getPrice(exchangeInfo: ExchangeState): Option[BigDecimal] = {
     val topOpposingOrder = delegate.topOpposingOrderPrice(exchangeInfo)
-    delegate.getOrder(exchangeInfo).map(order => order.copy(price = topOpposingOrder.max(order.price - delta)))
+    delegate.getPrice(exchangeInfo).map(order => topOpposingOrder.max(order - delta))
   }
 }
 
-case class MatchHighestBidStrategy(maxAmount: BigDecimal, sellCurrency: Currency)
-    extends TradeStrategy
-    with WithOrderType {
+case class MatchHighestBidStrategy(sellCurrency: Currency) extends TradeStrategy with WithOrderType {
   override val orderType = OrderType.BID
 
-  private val delegate = ExactMatchingStrategy(maxAmount, sellCurrency, orderType)
+  private val delegate = ExactMatchingStrategy(sellCurrency, orderType)
 
-  override def getOrder(exchangeInfo: ExchangeState): Option[CalculatedOrder] =
-    delegate.getOrder(exchangeInfo)
+  override def getPrice(exchangeInfo: ExchangeState): Option[BigDecimal] =
+    delegate.getPrice(exchangeInfo)
 }
 
-case class OneAboveHighestBidStrategy(maxAmount: BigDecimal, sellCurrency: Currency) extends TradeStrategy {
-  private val delegate = MatchHighestBidStrategy(maxAmount, sellCurrency)
+case class OneAboveHighestBidStrategy(sellCurrency: Currency) extends TradeStrategy {
+  private val delegate = MatchHighestBidStrategy(sellCurrency)
   private val delta = BigDecimal(0.01)
 
-  override def getOrder(exchangeInfo: ExchangeState): Option[CalculatedOrder] = {
+  override def getPrice(exchangeInfo: ExchangeState): Option[BigDecimal] = {
     val topOpposingOrder = delegate.topOpposingOrderPrice(exchangeInfo)
-    delegate.getOrder(exchangeInfo).map(order => order.copy(price = topOpposingOrder.min(order.price + delta)))
+    delegate.getPrice(exchangeInfo).map(order => topOpposingOrder.min(order + delta))
   }
 }
