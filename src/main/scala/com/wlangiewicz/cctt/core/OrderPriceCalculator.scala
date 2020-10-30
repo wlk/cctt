@@ -1,10 +1,15 @@
 package com.wlangiewicz.cctt.core
 
 import com.typesafe.scalalogging.LazyLogging
-import com.wlangiewicz.cctt.data.ExchangeState
+import org.knowm.xchange.dto.account.AccountInfo
+import org.knowm.xchange.dto.marketdata.OrderBook
 
 object OrderPriceCalculator extends LazyLogging {
 
-  def calculatePrice(exchangeInfo: ExchangeState, tradeStrategy: TradeStrategy): Option[BigDecimal] =
-    tradeStrategy.getPrice(exchangeInfo)
+  def calculatePrice(
+      accountInfo: AccountInfo,
+      orderBook: OrderBook,
+      tradeStrategy: TradeStrategy
+    ): Option[BigDecimal] =
+    tradeStrategy.getPrice(accountInfo, orderBook)
 }

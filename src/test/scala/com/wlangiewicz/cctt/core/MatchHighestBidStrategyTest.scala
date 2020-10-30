@@ -1,6 +1,5 @@
 package com.wlangiewicz.cctt.core
 
-import com.wlangiewicz.cctt.data.ExchangeState
 import org.knowm.xchange.currency.Currency
 import org.scalatest.matchers._
 import org.scalatest.wordspec.AnyWordSpec
@@ -18,7 +17,7 @@ class MatchHighestBidStrategyTest extends AnyWordSpec with should.Matchers {
       val orderBook = OrderBookTestHelper.withTopOrders(lowestAsk, highestBid)
 
       val result =
-        OrderPriceCalculator.calculatePrice(ExchangeState(orderBook, AccountInfoTestHelper.hasBtcAndUsd), strategy)
+        OrderPriceCalculator.calculatePrice(AccountInfoTestHelper.hasBtcAndUsd, orderBook, strategy)
       result shouldBe Some(highestBid)
     }
   }

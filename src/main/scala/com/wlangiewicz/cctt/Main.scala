@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.typesafe.scalalogging.LazyLogging
 import com.wlangiewicz.cctt.config.ApplicationConfig
-import com.wlangiewicz.cctt.core.{ExchangeIoBuilder, ExchangeSync}
+import com.wlangiewicz.cctt.core.ExchangeIoBuilder
 import com.wlangiewicz.cctt.http.docs.DocsRoute
 import com.wlangiewicz.cctt.http.endpoints.gettrade.{GetTradeController, GetTradeRoute}
 import com.wlangiewicz.cctt.http.endpoints.newtrade.{NewTradeController, NewTradeRoute}
@@ -22,9 +22,7 @@ object Main extends App with LazyLogging {
 
   val exchangeIo = ExchangeIoBuilder.build(config.exchange, config.key, config.secret)
 
-  val exchangeSync = new ExchangeSync(exchangeIo)
-
-  val runner = new Runner(exchangeIo, exchangeSync)
+  val runner = new Runner(exchangeIo)
 
   val docsRoute = new DocsRoute
   val openOrdersRoute = new OpenOrdersRoute(new OpenOrdersController)

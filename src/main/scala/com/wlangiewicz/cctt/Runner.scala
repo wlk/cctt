@@ -7,7 +7,7 @@ import org.knowm.xchange.currency.CurrencyPair
 import scala.annotation.tailrec
 import scala.util.Try
 
-class Runner(exchangeIo: BaseExchangeIo, exchangeSync: ExchangeSync) extends LazyLogging {
+class Runner(exchangeIo: BaseExchangeIo) extends LazyLogging {
 
   @tailrec
   final def loop(sleep: Long): Unit = {
@@ -24,14 +24,15 @@ class Runner(exchangeIo: BaseExchangeIo, exchangeSync: ExchangeSync) extends Laz
   private def tick(): Unit = {
     val pair = CurrencyPair.BTC_EUR
     val tradeStrategy = NoOpTradeStrategy
-    val exchangeState = exchangeSync.getExchangeState(pair)
+    val accountInfo = exchangeIo.getAccountInfo
+    val orderBook = exchangeIo.getOrderBook(pair)
 
-    logger.debug(s"AccountInfo: ${exchangeState.accountInfo.toString}")
+    logger.debug(s"AccountInfo: ${accountInfo.toString}")
 
     val openOrders = exchangeIo.getOpenOrders(pair)
     logger.debug(s"Open Orders: ${openOrders.toString}")
 
-    val calculatedOrder = OrderPriceCalculator.calculatePrice(exchangeState, tradeStrategy)
+    val calculatedOrder = OrderPriceCalculator.calculatePrice(accountInfo, orderBook, tradeStrategy)
 
     val deletedOrderIds = OrderCancellationService.run(calculatedOrder, openOrders, exchangeIo).toSet
 

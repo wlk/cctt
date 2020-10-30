@@ -1,6 +1,5 @@
 package com.wlangiewicz.cctt.core
 
-import com.wlangiewicz.cctt.data.ExchangeState
 import org.knowm.xchange.currency.Currency
 import org.scalatest.matchers._
 import org.scalatest.wordspec.AnyWordSpec
@@ -13,7 +12,8 @@ class MatchLowestAskStrategyTest extends AnyWordSpec with should.Matchers {
   "MatchLowestAskStrategy" should {
     "return 0 amount when empty order book provided" in {
       val result = OrderPriceCalculator.calculatePrice(
-        ExchangeState(OrderBookTestHelper.empty, AccountInfoTestHelper.empty),
+        AccountInfoTestHelper.empty,
+        OrderBookTestHelper.empty,
         strategy
       )
       result shouldBe None
@@ -21,7 +21,8 @@ class MatchLowestAskStrategyTest extends AnyWordSpec with should.Matchers {
 
     "return 0 amount when non-empty order book provided but account balance is 0" in {
       val result = OrderPriceCalculator.calculatePrice(
-        ExchangeState(OrderBookTestHelper.singleValue, AccountInfoTestHelper.empty),
+        AccountInfoTestHelper.empty,
+        OrderBookTestHelper.singleValue,
         strategy
       )
       result shouldBe None
@@ -33,7 +34,7 @@ class MatchLowestAskStrategyTest extends AnyWordSpec with should.Matchers {
       val orderBook = OrderBookTestHelper.withTopOrders(lowestAsk, highestBid)
 
       val result =
-        OrderPriceCalculator.calculatePrice(ExchangeState(orderBook, AccountInfoTestHelper.hasBtcAndUsd), strategy)
+        OrderPriceCalculator.calculatePrice(AccountInfoTestHelper.hasBtcAndUsd, orderBook, strategy)
       result shouldBe Some(lowestAsk)
     }
   }
