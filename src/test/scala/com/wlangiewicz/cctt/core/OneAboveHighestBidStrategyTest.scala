@@ -1,13 +1,11 @@
 package com.wlangiewicz.cctt.core
 
-import org.knowm.xchange.currency.Currency
 import org.scalatest.matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
 class OneAboveHighestBidStrategyTest extends AnyWordSpec with should.Matchers {
-  private val sellCurrency = Currency.BTC
   private val tradeAmount = BigDecimal("0.1")
-  private val strategy = OneAboveHighestBidStrategy(sellCurrency)
+  private val strategy = OneAboveHighestBidStrategy()
 
   "OneBelowLowestAskStrategy" should {
     s"return $tradeAmount amount and price = lowestAsk + 0.01 when non-empty order book provided and account has balance" in {

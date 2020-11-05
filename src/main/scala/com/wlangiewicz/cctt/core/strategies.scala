@@ -1,17 +1,33 @@
 package com.wlangiewicz.cctt.core
 
-import org.knowm.xchange.currency.Currency
+import com.wlangiewicz.cctt.config.InvalidTradeStrategyException
 import org.knowm.xchange.dto.Order.OrderType
 import org.knowm.xchange.dto.account.AccountInfo
 import org.knowm.xchange.dto.marketdata.OrderBook
 
 import scala.jdk.CollectionConverters._
+import scala.util.Try
 
 sealed trait TradeStrategy {
   def getPrice(accountInfo: AccountInfo, orderBook: OrderBook): Option[BigDecimal]
 }
 
-sealed trait WithOrderType {
+object TradeStrategy {
+
+  def create(tradeStrategyString: String): Try[TradeStrategy] =
+    Try(tradeStrategyString match {
+      case "NoOpTradeStrategy"         => NoOpTradeStrategy
+      case "MatchLowestAskStrategy"    => MatchLowestAskStrategy()
+      case "OneBelowLowestAskStrategy" => OneBelowLowestAskStrategy()
+      case "MatchHighestBidStrategy"   => MatchHighestBidStrategy()
+      case "OneAboveHighestBidStrategy" =>
+        OneAboveHighestBidStrategy()
+      case other => throw new InvalidTradeStrategyException(other)
+    })
+
+}
+
+sealed private[core] trait WithOrderType {
 
   def orderType: OrderType
 
@@ -38,33 +54,28 @@ case object NoOpTradeStrategy extends TradeStrategy {
   override def getPrice(accountInfo: AccountInfo, orderBook: OrderBook): Option[BigDecimal] = None
 }
 
-private case class ExactMatchingStrategy(sellCurrency: Currency, override val orderType: OrderType)
-    extends TradeStrategy
-    with WithOrderType {
+private case class ExactMatchingStrategy(override val orderType: OrderType) extends TradeStrategy with WithOrderType {
 
-  override def getPrice(accountInfo: AccountInfo, orderBook: OrderBook): Option[BigDecimal] = {
-    val walletAmount = BigDecimal(accountInfo.getWallet.getBalance(sellCurrency).getAvailable)
-
+  override def getPrice(accountInfo: AccountInfo, orderBook: OrderBook): Option[BigDecimal] =
     orderBook.getOrders(orderType).asScala.sorted.headOption.map(_.getLimitPrice).flatMap { bestPrice =>
-      if (walletAmount == 0 || bestPrice == BigDecimal(0).bigDecimal) {
+      if (bestPrice == BigDecimal(0).bigDecimal) {
         None
       } else {
         Some(bestPrice)
       }
     }
-  }
 }
 
-case class MatchLowestAskStrategy(sellCurrency: Currency) extends TradeStrategy with WithOrderType {
+case class MatchLowestAskStrategy() extends TradeStrategy with WithOrderType {
   override val orderType = OrderType.ASK
-  private val delegate = ExactMatchingStrategy(sellCurrency, orderType)
+  private val delegate = ExactMatchingStrategy(orderType)
 
   override def getPrice(accountInfo: AccountInfo, orderBook: OrderBook): Option[BigDecimal] =
     delegate.getPrice(accountInfo, orderBook)
 }
 
-case class OneBelowLowestAskStrategy(sellCurrency: Currency) extends TradeStrategy {
-  private val delegate = MatchLowestAskStrategy(sellCurrency)
+case class OneBelowLowestAskStrategy() extends TradeStrategy {
+  private val delegate = MatchLowestAskStrategy()
   private val delta = BigDecimal(0.01)
 
   override def getPrice(accountInfo: AccountInfo, orderBook: OrderBook): Option[BigDecimal] = {
@@ -73,17 +84,17 @@ case class OneBelowLowestAskStrategy(sellCurrency: Currency) extends TradeStrate
   }
 }
 
-case class MatchHighestBidStrategy(sellCurrency: Currency) extends TradeStrategy with WithOrderType {
+case class MatchHighestBidStrategy() extends TradeStrategy with WithOrderType {
   override val orderType = OrderType.BID
 
-  private val delegate = ExactMatchingStrategy(sellCurrency, orderType)
+  private val delegate = ExactMatchingStrategy(orderType)
 
   override def getPrice(accountInfo: AccountInfo, orderBook: OrderBook): Option[BigDecimal] =
     delegate.getPrice(accountInfo, orderBook)
 }
 
-case class OneAboveHighestBidStrategy(sellCurrency: Currency) extends TradeStrategy {
-  private val delegate = MatchHighestBidStrategy(sellCurrency)
+case class OneAboveHighestBidStrategy() extends TradeStrategy {
+  private val delegate = MatchHighestBidStrategy()
   private val delta = BigDecimal(0.01)
 
   override def getPrice(accountInfo: AccountInfo, orderBook: OrderBook): Option[BigDecimal] = {

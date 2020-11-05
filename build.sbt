@@ -15,7 +15,7 @@ libraryDependencies ++= {
   val scalaLoggingVersion = "3.9.2"
   val catsVersion = "2.2.0"
   val pureconfigVersion = "0.14.0"
-  val tapirVersion = "0.17.0-M5"
+  val tapirVersion = "0.17.0-M6"
 
   val testDependencies = Seq(
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion  % Test,

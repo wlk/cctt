@@ -2,8 +2,11 @@ package com.wlangiewicz.cctt.http
 
 import java.util.UUID
 
+import com.wlangiewicz.cctt.core.TradeStrategy
 import com.wlangiewicz.cctt.http.data._
-import sttp.tapir.SchemaType.SNumber
+import io.circe.Decoder
+import org.knowm.xchange.currency.CurrencyPair
+import sttp.tapir.SchemaType.{SNumber, SString}
 import sttp.tapir.{Codec, CodecFormat, DecodeResult, Schema, SchemaType, Validator}
 
 import scala.util.{Failure, Success, Try}
@@ -32,6 +35,8 @@ trait ApiTapirCodecs {
     Codec.string.mapDecode(decode)(_.toString)
   }
   implicit val schemaForBigDecimal: Schema[BigDecimal] = Schema(SNumber).format("decimal")
+  implicit val schemaForCurrencyPair: Schema[CurrencyPair] = Schema(SString)
+  implicit val schemaForTradeStrategy: Schema[TradeStrategy] = Schema(SString)
 
   implicit val TradeIdCodec = Codec.uuid.map(TradeId.apply _)(_.value)
 }
@@ -41,5 +46,13 @@ trait ApiJsonFormats {
 
   // this will encode/decode objects as direct json values
   implicit val TradeIdEncoder: Encoder[TradeId] = Encoder.encodeUUID.contramap[TradeId](_.value)
+
+  implicit val TradeStrategyEncoder: Encoder[TradeStrategy] =
+    Encoder.encodeString.contramap[TradeStrategy](_.getClass.getSimpleName)
+  implicit val CurrencyPairEncoder: Encoder[CurrencyPair] = Encoder.encodeString.contramap[CurrencyPair](_.toString)
+
+  implicit val TradeIdDecoder: Decoder[TradeId] = Decoder.decodeUUID.emapTry(uuid => Try(TradeId(uuid)))
+  implicit val TradeStrategyDecoder: Decoder[TradeStrategy] = Decoder.decodeString.emapTry(s => TradeStrategy.create(s))
+  implicit val CurrencyPairDecoder: Decoder[CurrencyPair] = Decoder.decodeString.emapTry(s => Try(new CurrencyPair(s)))
 
 }

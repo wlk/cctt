@@ -2,12 +2,13 @@ package com.wlangiewicz.cctt
 
 import com.wlangiewicz.cctt.core._
 import com.typesafe.scalalogging.LazyLogging
-import org.knowm.xchange.currency.CurrencyPair
+import com.wlangiewicz.cctt.dao.TradeDao
+import com.wlangiewicz.cctt.http.data.Trade
 
 import scala.annotation.tailrec
 import scala.util.Try
 
-class Runner(exchangeIo: BaseExchangeIo) extends LazyLogging {
+class Runner(exchangeIo: BaseExchangeIo, tradeDao: TradeDao) extends LazyLogging {
 
   @tailrec
   final def loop(sleep: Long): Unit = {
@@ -21,33 +22,38 @@ class Runner(exchangeIo: BaseExchangeIo) extends LazyLogging {
     loop(sleep)
   }
 
-  private def tick(): Unit = {
-    val pair = CurrencyPair.BTC_EUR
-    val tradeStrategy = NoOpTradeStrategy
-    val accountInfo = exchangeIo.getAccountInfo
-    val orderBook = exchangeIo.getOrderBook(pair)
+  def getOrderToProcess: Option[Trade] =
+    None
 
-    logger.debug(s"AccountInfo: ${accountInfo.toString}")
+  def getDecisionForTrade(trade: Trade): TradeDecision =
+    Hold
 
-    val openOrders = exchangeIo.getOpenOrders(pair)
-    logger.debug(s"Open Orders: ${openOrders.toString}")
+  private def tick(): Unit =
+    getOrderToProcess match {
+      case None => logger.info("No trade to process")
+      case Some(trade) =>
+        val accountInfo = exchangeIo.getAccountInfo
+        val orderBook = exchangeIo.getOrderBook(trade.currencyPair)
 
-    val calculatedOrder = OrderPriceCalculator.calculatePrice(accountInfo, orderBook, tradeStrategy)
+        logger.debug(s"AccountInfo: ${accountInfo.toString}")
+        val openOrders = exchangeIo.getOpenOrders(trade.currencyPair)
+        logger.debug(s"Open Orders: ${openOrders.toString}")
 
-    val deletedOrderIds = OrderCancellationService.run(calculatedOrder, openOrders, exchangeIo).toSet
+        getDecisionForTrade(trade) match {
+          case Hold   => ()
+          case Cancel => ()
+          case Create =>
+            val calculatedOrder = OrderPriceCalculator.calculatePrice(accountInfo, orderBook, trade.strategy)
+            calculatedOrder match {
+              case Some(price) =>
+                logger.info(s"TradeEngine returned a trade $price to create")
+                val remainingAmount = trade.primaryAmount // todo
+                OrderExecutor.placeOrderIfValid(price, remainingAmount, exchangeIo, trade.currencyPair)
+              case None =>
+                logger.info("TradeEngine did not return a trade, not trading")
+            }
 
-    calculatedOrder match {
-      case Some(price) if OrderExecutor.shouldPlaceNewOrder(openOrders, deletedOrderIds, price) =>
-        logger.info(s"TradeEngine returned a trade $price to create")
-        val amount: BigDecimal = 1
-        OrderExecutor.placeOrderIfValid(price, amount, exchangeIo, pair)
-      case Some(price) =>
-        logger.info(
-          s"TradeEngine returned a trade, but existing trade at price $price is still the best one"
-        )
-      case None =>
-        logger.info("TradeEngine did not return a trade, not trading")
+          case Move => ()
+        }
     }
-
-  }
 }

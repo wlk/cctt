@@ -1,13 +1,11 @@
 package com.wlangiewicz.cctt.core
 
-import org.knowm.xchange.currency.Currency
 import org.scalatest.matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
 class MatchHighestBidStrategyTest extends AnyWordSpec with should.Matchers {
-  private val sellCurrency = Currency.BTC
   private val tradeAmount = BigDecimal("0.1")
-  private val strategy = MatchHighestBidStrategy(sellCurrency)
+  private val strategy = MatchHighestBidStrategy()
 
   "MatchHighestBidStrategy" should {
 
